@@ -1,113 +1,116 @@
+Ось найпростіший і найнадійніший варіант.
+
+Щоб сайт гарантовано працював на GitHub і здався як лабораторна, ми зробимо все в одному файлі. Вам не потрібен Python, не потрібні папки. Тільки один файл index.html.
+
+Інструкція (Зробіть це за 2 хвилини):
+Створіть у себе на комп'ютері текстовий файл і назвіть його index.html.
+
+Відкрийте його (у Блокноті або будь-якому редакторі).
+
+Скопіюйте туди код, який я даю нижче.
+
+Закиньте цей файл на GitHub і в налаштуваннях (Settings -> Pages) увімкніть сайт.
+
+Все. Це виконане завдання згідно з методичкою: є список, є збереження (LocalStorage), і є доданий чекбокс "Терміново".
+
+Код для файлу index.html
+HTML
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лабораторна 9: TODO Список</title>
+    <title>To-Do Список (Лаб 9)</title>
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
-        .control-panel { margin-top: 20px; }
-        button { margin: 5px; padding: 8px 12px; cursor: pointer; }
-        .status { margin-top: 15px; color: green; font-weight: bold; }
+        /* Простий дизайн, щоб виглядало охайно */
+        body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
+        button { padding: 10px; margin: 5px 0; cursor: pointer; width: 100%; }
+        input[type="text"] { width: 95%; padding: 8px; margin-bottom: 10px; }
+        .status { color: green; margin-top: 10px; text-align: center; }
+        label { margin-right: 15px; }
     </style>
-    <script>
-        // 1. ЗБЕРЕЖЕННЯ ДАНИХ (Save)
-        function saveData() {
-            // Отримуємо значення з поля введення
-            let taskName = document.getElementById("name").value;
-            // Отримуємо стан чекбоксів (true або false)
-            let isImportant = document.getElementById("chkImportant").checked;
-            let isUrgent = document.getElementById("chkUrgent").checked; // ДОДАНИЙ КОМПОНЕНТ
-
-            if (taskName) {
-                // Зберігаємо кожне значення окремо в LocalStorage
-                localStorage.setItem("taskName", taskName);
-                localStorage.setItem("isImportant", isImportant);
-                localStorage.setItem("isUrgent", isUrgent);
-                
-                document.getElementById("statusMsg").innerText = "Дані успішно збережено!";
-            } else {
-                alert("Будь ласка, введіть назву завдання!");
-            }
-        }
-
-        // 2. ОТРИМАННЯ ДАНИХ (Load)
-        function getData() {
-            // Зчитуємо дані з LocalStorage
-            let storedName = localStorage.getItem("taskName");
-            let storedImportant = localStorage.getItem("isImportant");
-            let storedUrgent = localStorage.getItem("isUrgent");
-
-            if (storedName) {
-                // Відновлюємо текст завдання
-                document.getElementById("name").value = storedName;
-                document.getElementById("displayTask").innerText = "Поточне завдання: " + storedName;
-                
-                // Відновлюємо стан чекбоксів. 
-                // localStorage зберігає все як рядки ("true"/"false"), тому порівнюємо з рядком
-                document.getElementById("chkImportant").checked = (storedImportant === 'true');
-                document.getElementById("chkUrgent").checked = (storedUrgent === 'true');
-
-                document.getElementById("statusMsg").innerText = "Дані завантажено.";
-            } else {
-                alert("Дані відсутні у сховищі!");
-            }
-        }
-
-        // 3. ВИДАЛЕННЯ ДАНИХ (Delete specific)
-        function removeData() {
-            localStorage.removeItem("taskName");
-            localStorage.removeItem("isImportant");
-            localStorage.removeItem("isUrgent");
-            
-            // Очищаємо форму візуально
-            document.getElementById("name").value = "";
-            document.getElementById("chkImportant").checked = false;
-            document.getElementById("chkUrgent").checked = false;
-            document.getElementById("displayTask").innerText = "Завдання";
-            
-            document.getElementById("statusMsg").innerText = "Завдання видалено.";
-        }
-
-        // 4. ОЧИЩЕННЯ ВСЬОГО (Clear All)
-        function clearData() {
-            localStorage.clear();
-            removeData(); // Також очищаємо поля на екрані
-            document.getElementById("statusMsg").innerText = "Повне очищення бази даних.";
-        }
-    </script>
 </head>
 <body>
 
-    <h1>Мій TODO список (Лаб. 9)</h1>
+    <h1>Мій Список Завдань</h1>
 
-    <label for="name">Назва завдання: </label>
-    <input type="text" id="name" name="name" placeholder="Введіть текст...">
-    
+    <label>Введіть завдання:</label>
+    <input type="text" id="myInput" placeholder="Напишіть щось...">
+
     <br><br>
 
-    <fieldset>
-        <legend>Параметри завдання:</legend>
-        
-        <input type="checkbox" id="chkImportant" name="important">
-        <label for="chkImportant">Це важливо</label>
-        <br>
+    <input type="checkbox" id="checkImportant"> <label for="checkImportant">Важливо</label>
+    <input type="checkbox" id="checkUrgent"> <label for="checkUrgent">Терміново</label>
 
-        <input type="checkbox" id="chkUrgent" name="urgent">
-        <label for="chkUrgent">Це терміново</label>
-    </fieldset>
+    <hr>
+    
+    <h3>Ваше збережене завдання:</h3>
+    <p id="savedText" style="font-weight: bold; font-size: 1.2em;">(Пусто)</p>
+    <p id="savedStatus" style="color: gray;"></p>
 
-    <h3 id="displayTask">Завдання не завантажено</h3>
+    <hr>
 
-    <div class="control-panel">
-        <button onclick="saveData()">Зберегти (Save)</button>
-        <button onclick="getData()">Завантажити (Load)</button>
-        <button onclick="removeData()">Видалити (Delete)</button>
-        <button onclick="clearData()">Очистити все (Clear)</button>
-    </div>
+    <button onclick="saveMyData()">💾 Зберегти завдання</button>
+    <button onclick="loadMyData()">📂 Показати збережене</button>
+    <button onclick="deleteMyData()" style="background-color: #ffcccc;">❌ Видалити</button>
 
-    <div id="statusMsg" class="status"></div>
+    <p id="msg" class="status"></p>
+
+    <script>
+        // --- ЛОГІКА РОБОТИ (JavaScript) ---
+
+        function saveMyData() {
+            // 1. Беремо текст і галочки
+            let text = document.getElementById("myInput").value;
+            let important = document.getElementById("checkImportant").checked;
+            let urgent = document.getElementById("checkUrgent").checked;
+
+            if(text.length === 0) {
+                alert("Напишіть хоч щось!");
+                return;
+            }
+
+            // 2. Зберігаємо в пам'ять браузера
+            localStorage.setItem("lab_task", text);
+            localStorage.setItem("lab_imp", important);
+            localStorage.setItem("lab_urg", urgent);
+
+            document.getElementById("msg").innerText = "Збережено успішно!";
+        }
+
+        function loadMyData() {
+            // 1. Дістаємо з пам'яті
+            let text = localStorage.getItem("lab_task");
+            let important = localStorage.getItem("lab_imp");
+            let urgent = localStorage.getItem("lab_urg");
+
+            if(text) {
+                // 2. Показуємо на екрані
+                document.getElementById("savedText").innerText = text;
+                
+                // Формуємо статус
+                let statusInfo = "";
+                if(important === "true") statusInfo += " [ВАЖЛИВО] ";
+                if(urgent === "true") statusInfo += " [ТЕРМІНОВО] ";
+                document.getElementById("savedStatus").innerText = statusInfo;
+                
+                // Відновлюємо поля введення
+                document.getElementById("myInput").value = text;
+                document.getElementById("checkImportant").checked = (important === "true");
+                document.getElementById("checkUrgent").checked = (urgent === "true");
+
+                document.getElementById("msg").innerText = "Дані завантажено!";
+            } else {
+                alert("Нічого не збережено!");
+            }
+        }
+
+        function deleteMyData() {
+            localStorage.clear();
+            location.reload(); // Перезавантажити сторінку
+        }
+    </script>
 
 </body>
-
 </html>
