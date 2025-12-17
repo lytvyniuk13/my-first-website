@@ -2,52 +2,64 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Calculator Simplified</title>
+    <title>Калькулятор</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; }
+        input { width: 100%; padding: 10px; font-size: 18px; margin-bottom: 10px; box-sizing: border-box; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-right: 5px; }
+        .error { color: red; margin-top: 10px; display: none; }
+        .help { color: #555; font-size: 14px; margin-top: 15px; }
+    </style>
 </head>
 <body>
-    <a href="index.html">⬅ Назад</a>
+    <a href="index.html" style="text-decoration: none;">⬅ Назад</a>
     <h1>Калькулятор</h1>
 
-    <input type="text" id="res" style="width: 200px; font-size: 20px;" readonly>
-    <br><br>
+    <!-- Введення -->
+    <input type="text" id="res" placeholder="ведіть вираз" oninput="hideError()">
+    
+    <!-- Кнопки -->
+    <button onclick="calc()">Обчислити</button>
+    <button onclick="clean()">Очистити</button>
 
-    <button onclick="ins('1')">1</button>
-    <button onclick="ins('2')">2</button>
-    <button onclick="ins('3')">3</button>
-    <button onclick="ins('+')">+</button>
-    <br>
-    <button onclick="ins('4')">4</button>
-    <button onclick="ins('5')">5</button>
-    <button onclick="ins('6')">6</button>
-    <button onclick="ins('-')">-</button>
-    <br>
-    <button onclick="ins('7')">7</button>
-    <button onclick="ins('8')">8</button>
-    <button onclick="ins('9')">9</button>
-    <button onclick="ins('*')">×</button>
-    <br>
-    <button onclick="clean()">C</button>
-    <button onclick="ins('0')">0</button>
-    <button onclick="calc()">=</button>
-    <button onclick="ins('/')">÷</button>
+    <!-- Повідомлення про помилку -->
+    <p id="errorMsg" class="error">⚠ Помилка! Перевірте формат.</p>
+
+    <!-- довідка -->
+    <p class="help">Довідка: <b>**</b> - степінь, <b>//</b> - корінь</p>
 
     <script>
         let f = document.getElementById('res');
+        let err = document.getElementById('errorMsg');
+
         
-        // Додає цифру або знак
-        function ins(v) { 
-            f.value += v; 
-        }
-        
-        // Рахує результат
+        // Дозволяє числа, оператори +, -, *, /, **, //
+        const regexCalc = /^-?(?:\d+(?:\.\d+)?)(?:\s*(?:\*\*|\/\/|[\+\-\*\/])\s*-?(?:\d+(?:\.\d+)?))*$/;
+
         function calc() { 
-            try { f.value = eval(f.value); } catch { f.value = 'Error'; } 
+            let val = f.value;
+
+            if (regexCalc.test(val)) {
+                try {
+
+                    let processedVal = val.replace(/(\d+(?:\.\d+)?)\s*\/\/\s*(\d+(?:\.\d+)?)/g, "Math.pow($1, 1/$2)");
+                    
+                    f.value = eval(processedVal); 
+                } catch (e) { 
+                    showError();
+                }
+            } else {
+                showError();
+            }
         }
         
-        // Очищає
         function clean() { 
             f.value = ''; 
+            hideError();
         }
+
+        function showError() { err.style.display = 'block'; }
+        function hideError() { err.style.display = 'none'; }
     </script>
 </body>
 </html>
