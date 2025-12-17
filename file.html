@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторна 9: TODO Список</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+        .control-panel { margin-top: 20px; }
+        button { margin: 5px; padding: 8px 12px; cursor: pointer; }
+        .status { margin-top: 15px; color: green; font-weight: bold; }
+    </style>
+    <script>
+        // 1. ЗБЕРЕЖЕННЯ ДАНИХ (Save)
+        function saveData() {
+            // Отримуємо значення з поля введення
+            let taskName = document.getElementById("name").value;
+            // Отримуємо стан чекбоксів (true або false)
+            let isImportant = document.getElementById("chkImportant").checked;
+            let isUrgent = document.getElementById("chkUrgent").checked; // ДОДАНИЙ КОМПОНЕНТ
+
+            if (taskName) {
+                // Зберігаємо кожне значення окремо в LocalStorage
+                localStorage.setItem("taskName", taskName);
+                localStorage.setItem("isImportant", isImportant);
+                localStorage.setItem("isUrgent", isUrgent);
+                
+                document.getElementById("statusMsg").innerText = "Дані успішно збережено!";
+            } else {
+                alert("Будь ласка, введіть назву завдання!");
+            }
+        }
+
+        // 2. ОТРИМАННЯ ДАНИХ (Load)
+        function getData() {
+            // Зчитуємо дані з LocalStorage
+            let storedName = localStorage.getItem("taskName");
+            let storedImportant = localStorage.getItem("isImportant");
+            let storedUrgent = localStorage.getItem("isUrgent");
+
+            if (storedName) {
+                // Відновлюємо текст завдання
+                document.getElementById("name").value = storedName;
+                document.getElementById("displayTask").innerText = "Поточне завдання: " + storedName;
+                
+                // Відновлюємо стан чекбоксів. 
+                // localStorage зберігає все як рядки ("true"/"false"), тому порівнюємо з рядком
+                document.getElementById("chkImportant").checked = (storedImportant === 'true');
+                document.getElementById("chkUrgent").checked = (storedUrgent === 'true');
+
+                document.getElementById("statusMsg").innerText = "Дані завантажено.";
+            } else {
+                alert("Дані відсутні у сховищі!");
+            }
+        }
+
+        // 3. ВИДАЛЕННЯ ДАНИХ (Delete specific)
+        function removeData() {
+            localStorage.removeItem("taskName");
+            localStorage.removeItem("isImportant");
+            localStorage.removeItem("isUrgent");
+            
+            // Очищаємо форму візуально
+            document.getElementById("name").value = "";
+            document.getElementById("chkImportant").checked = false;
+            document.getElementById("chkUrgent").checked = false;
+            document.getElementById("displayTask").innerText = "Завдання";
+            
+            document.getElementById("statusMsg").innerText = "Завдання видалено.";
+        }
+
+        // 4. ОЧИЩЕННЯ ВСЬОГО (Clear All)
+        function clearData() {
+            localStorage.clear();
+            removeData(); // Також очищаємо поля на екрані
+            document.getElementById("statusMsg").innerText = "Повне очищення бази даних.";
+        }
+    </script>
+</head>
+<body>
+
+    <h1>Мій TODO список (Лаб. 9)</h1>
+
+    <label for="name">Назва завдання: </label>
+    <input type="text" id="name" name="name" placeholder="Введіть текст...">
+    
+    <br><br>
+
+    <fieldset>
+        <legend>Параметри завдання:</legend>
+        
+        <input type="checkbox" id="chkImportant" name="important">
+        <label for="chkImportant">Це важливо</label>
+        <br>
+
+        <input type="checkbox" id="chkUrgent" name="urgent">
+        <label for="chkUrgent">Це терміново</label>
+    </fieldset>
+
+    <h3 id="displayTask">Завдання не завантажено</h3>
+
+    <div class="control-panel">
+        <button onclick="saveData()">Зберегти (Save)</button>
+        <button onclick="getData()">Завантажити (Load)</button>
+        <button onclick="removeData()">Видалити (Delete)</button>
+        <button onclick="clearData()">Очистити все (Clear)</button>
+    </div>
+
+    <div id="statusMsg" class="status"></div>
+
+</body>
+</html>
