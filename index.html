@@ -1,100 +1,232 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do Список (Лаб 9)</title>
+    <title>Лабораторна 9: Менеджер завдань</title>
     <style>
-        /* Простий дизайн, щоб виглядало охайно */
-        body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
-        button { padding: 10px; margin: 5px 0; cursor: pointer; width: 100%; }
-        input[type="text"] { width: 95%; padding: 8px; margin-bottom: 10px; }
-        .status { color: green; margin-top: 10px; text-align: center; }
-        label { margin-right: 15px; }
+        body { 
+            font-family: sans-serif; 
+            max-width: 600px; 
+            margin: 20px auto; 
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 { text-align: center; color: #333; }
+        
+        /* Стилі для панелі введення */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button.add-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        /* Стилі для кнопок керування */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 5px;
+        }
+        .controls button {
+            flex: 1;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .btn-done { background-color: #2196F3; } /* Синя */
+        .btn-del { background-color: #f44336; }  /* Червона */
+        .btn-clear { background-color: #555; }    /* Сіра */
+
+        button:hover { opacity: 0.9; }
+
+        /* Стилі для списку */
+        ul { list-style-type: none; padding: 0; }
+        li {
+            background: white;
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+        }
+        li input[type="checkbox"] {
+            transform: scale(1.5);
+            margin-right: 15px;
+        }
+
+        /* Стиль для виконаного завдання (без чекбокса, закреслений) */
+        .completed-task {
+            text-decoration: line-through;
+            color: #888;
+            background-color: #e0e0e0;
+            padding-left: 35px; /* Відступ замість чекбокса */
+        }
     </style>
 </head>
 <body>
 
-    <h1>Мій Список Завдань</h1>
+    <h1>Список завдань</h1>
 
-    <label>Введіть завдання:</label>
-    <input type="text" id="myInput" placeholder="Напишіть щось...">
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Введіть назву завдання...">
+        <button class="add-btn" onclick="addTask()">Зберегти завдання</button>
+    </div>
 
-    <br><br>
+    <div class="controls">
+        <button class="btn-done" onclick="markSelectedAsDone()">Позначити як виконане</button>
+        <button class="btn-del" onclick="deleteSelected()">Видалити вибрані</button>
+        <button class="btn-clear" onclick="clearDatabase()">Очистити базу даних</button>
+    </div>
 
-    <input type="checkbox" id="checkImportant"> <label for="checkImportant">Важливо</label>
-    <input type="checkbox" id="checkUrgent"> <label for="checkUrgent">Терміново</label>
-
-    <hr>
-    
-    <h3>Ваше збережене завдання:</h3>
-    <p id="savedText" style="font-weight: bold; font-size: 1.2em;">(Пусто)</p>
-    <p id="savedStatus" style="color: gray;"></p>
-
-    <hr>
-
-    <button onclick="saveMyData()">💾 Зберегти завдання</button>
-    <button onclick="loadMyData()">📂 Показати збережене</button>
-    <button onclick="deleteMyData()" style="background-color: #ffcccc;">❌ Видалити</button>
-
-    <p id="msg" class="status"></p>
+    <ul id="taskList"></ul>
 
     <script>
-        // --- ЛОГІКА РОБОТИ (JavaScript) ---
+        // При завантаженні сторінки - показуємо збережені завдання
+        document.addEventListener("DOMContentLoaded", renderTasks);
 
-        function saveMyData() {
-            // 1. Беремо текст і галочки
-            let text = document.getElementById("myInput").value;
-            let important = document.getElementById("checkImportant").checked;
-            let urgent = document.getElementById("checkUrgent").checked;
+        // --- 1. ДОДАТИ ЗАВДАННЯ ---
+        function addTask() {
+            let input = document.getElementById("taskInput");
+            let text = input.value;
 
-            if(text.length === 0) {
-                alert("Напишіть хоч щось!");
+            if (text === "") {
+                alert("Введіть текст завдання!");
                 return;
             }
 
-            // 2. Зберігаємо в пам'ять браузера
-            localStorage.setItem("lab_task", text);
-            localStorage.setItem("lab_imp", important);
-            localStorage.setItem("lab_urg", urgent);
+            // Отримуємо поточний список або створюємо новий
+            let tasks = getTasksFromStorage();
 
-            document.getElementById("msg").innerText = "Збережено успішно!";
+            // Додаємо новий об'єкт: текст + статус (false означає "не виконано")
+            tasks.push({ text: text, completed: false });
+
+            // Зберігаємо і оновлюємо вигляд
+            saveTasksToStorage(tasks);
+            input.value = ""; // очистити поле
+            renderTasks();
         }
 
-        function loadMyData() {
-            // 1. Дістаємо з пам'яті
-            let text = localStorage.getItem("lab_task");
-            let important = localStorage.getItem("lab_imp");
-            let urgent = localStorage.getItem("lab_urg");
+        // --- 2. ПОЗНАЧИТИ ЯК ВИКОНАНЕ ---
+        function markSelectedAsDone() {
+            let tasks = getTasksFromStorage();
+            // Знаходимо всі чекбокси на сторінці
+            let checkboxes = document.querySelectorAll('.task-checkbox');
+            let isChanged = false;
 
-            if(text) {
-                // 2. Показуємо на екрані
-                document.getElementById("savedText").innerText = text;
-                
-                // Формуємо статус
-                let statusInfo = "";
-                if(important === "true") statusInfo += " [ВАЖЛИВО] ";
-                if(urgent === "true") statusInfo += " [ТЕРМІНОВО] ";
-                document.getElementById("savedStatus").innerText = statusInfo;
-                
-                // Відновлюємо поля введення
-                document.getElementById("myInput").value = text;
-                document.getElementById("checkImportant").checked = (important === "true");
-                document.getElementById("checkUrgent").checked = (urgent === "true");
+            // Проходимо по чекбоксах. id чекбокса відповідає індексу в масиві
+            checkboxes.forEach((box) => {
+                if (box.checked) {
+                    let index = box.dataset.index; // дістаємо номер завдання
+                    tasks[index].completed = true; // міняємо статус на "виконано"
+                    isChanged = true;
+                }
+            });
 
-                document.getElementById("msg").innerText = "Дані завантажено!";
+            if (isChanged) {
+                saveTasksToStorage(tasks);
+                renderTasks();
             } else {
-                alert("Нічого не збережено!");
+                alert("Виберіть завдання галочкою, щоб виконати його.");
             }
         }
 
-        function deleteMyData() {
-            localStorage.clear();
-            location.reload(); // Перезавантажити сторінку
+        // --- 3. ВИДАЛИТИ ВИБРАНІ (Ті, де стоїть галочка) ---
+        function deleteSelected() {
+            let tasks = getTasksFromStorage();
+            let checkboxes = document.querySelectorAll('.task-checkbox');
+            
+            // Фільтруємо: залишаємо тільки ті, які НЕ були відмічені для видалення зараз
+            // (Логіка: видаляємо ті елементи, чиї чекбокси зараз checked)
+            
+            // Створимо список індексів для видалення
+            let indexesToDelete = [];
+            checkboxes.forEach((box) => {
+                if (box.checked) {
+                    indexesToDelete.push(parseInt(box.dataset.index));
+                }
+            });
+
+            if (indexesToDelete.length === 0) {
+                alert("Виберіть завдання галочкою, щоб видалити його.");
+                return;
+            }
+
+            // Залишаємо в масиві тільки ті, чиїх індексів НЕМАЄ в списку на видалення
+            let newTasks = tasks.filter((_, index) => !indexesToDelete.includes(index));
+
+            saveTasksToStorage(newTasks);
+            renderTasks();
+        }
+
+        // --- 4. ОЧИСТИТИ БАЗУ ДАНИХ ---
+        function clearDatabase() {
+            if(confirm("Ви точно хочете видалити ВСІ завдання?")) {
+                localStorage.removeItem("lab9_tasks");
+                renderTasks();
+            }
+        }
+
+        // --- ДОПОМІЖНІ ФУНКЦІЇ ---
+
+        // Зчитати з LocalStorage
+        function getTasksFromStorage() {
+            let stored = localStorage.getItem("lab9_tasks");
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        // Записати в LocalStorage
+        function saveTasksToStorage(tasks) {
+            localStorage.setItem("lab9_tasks", JSON.stringify(tasks));
+        }
+
+        // Головна функція: Малює список на екрані
+        function renderTasks() {
+            let tasks = getTasksFromStorage();
+            let list = document.getElementById("taskList");
+            list.innerHTML = ""; // Очищаємо список перед перемальовкою
+
+            tasks.forEach((task, index) => {
+                let li = document.createElement("li");
+
+                if (task.completed) {
+                    // ЯКЩО ВИКОНАНО: просто текст, закреслений (чекбокса немає)
+                    li.className = "completed-task";
+                    li.textContent = task.text + " (Виконано)";
+                } else {
+                    // ЯКЩО НЕ ВИКОНАНО: чекбокс + текст
+                    let checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.className = "task-checkbox";
+                    checkbox.dataset.index = index; // зберігаємо номер елемента
+
+                    let span = document.createElement("span");
+                    span.textContent = task.text;
+
+                    li.appendChild(checkbox);
+                    li.appendChild(span);
+                }
+
+                list.appendChild(li);
+            });
         }
     </script>
-
 </body>
 </html>
-
