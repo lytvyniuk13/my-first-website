@@ -1,0 +1,80 @@
+Зрозумів. Прибираємо весь дизайн, стилі та складний код. Лишаємо тільки голу функціональність.
+
+Ось два максимально коротких файли.
+
+1. todo.html (Список завдань)
+Працює на "чистому" JavaScript. Зберігає все, має другий чекбокс (як у завданні) і всі кнопки.
+
+HTML
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>ToDo Simplified</title>
+</head>
+<body>
+    <a href="index.html">⬅ Назад</a>
+    <h1>To-Do List</h1>
+
+    <input type="text" id="inp" placeholder="Завдання">
+    <label><input type="checkbox" id="urg"> Терміново</label>
+    <button onclick="add()">Зберегти завдання</button>
+
+    <hr>
+    <button onclick="mark()">Позначити як виконане</button>
+    <button onclick="del()">Видалити вибрані</button>
+    <button onclick="clr()">Очистити все</button>
+
+    <ul id="list"></ul>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('todo_db')) || [];
+        
+        function draw() {
+            let html = '';
+            db.forEach((item, i) => {
+                let style = item.done ? 'text-decoration: line-through; color: grey' : '';
+                let check = item.done ? '' : `<input type="checkbox" data-id="${i}">`; 
+                let urgentMark = item.urgent ? '<b>[!]</b> ' : '';
+                html += `<li style="${style}">${check} ${urgentMark}${item.text}</li>`;
+            });
+            document.getElementById('list').innerHTML = html;
+            localStorage.setItem('todo_db', JSON.stringify(db));
+        }
+
+        function add() {
+            let txt = document.getElementById('inp').value;
+            if(!txt) return;
+            let isUrgent = document.getElementById('urg').checked;
+            db.push({ text: txt, urgent: isUrgent, done: false });
+            document.getElementById('inp').value = ''; 
+            draw();
+        }
+
+        function mark() {
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(el => {
+                db[el.getAttribute('data-id')].done = true;
+            });
+            draw();
+        }
+
+        function del() {
+            // Залишаємо тільки ті, де галочка НЕ стоїть (або ті, що вже виконані і без галочки)
+            // Логіка: видаляємо ті, що зараз відмічені галочкою
+            let checks = document.querySelectorAll('input[type="checkbox"]:checked');
+            // Щоб видалити правильно, йдемо з кінця або фільтруємо
+            let idsToDelete = Array.from(checks).map(c => c.getAttribute('data-id'));
+            db = db.filter((_, i) => !idsToDelete.includes(String(i)));
+            draw();
+        }
+
+        function clr() {
+            db = [];
+            draw();
+        }
+
+        draw(); // Запуск при старті
+    </script>
+</body>
+</html>
