@@ -1,73 +1,94 @@
-
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>ToDo Simplified</title>
+    <title>To-Do Validated</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        input { padding: 5px; margin: 5px; }
+        .error { color: red; font-size: 0.9em; display: none; }
+    </style>
 </head>
 <body>
     <a href="index.html">⬅ Назад</a>
     <h1>To-Do List</h1>
 
-    <input type="text" id="inp" placeholder="Завдання">
-    <label><input type="checkbox" id="urg"> Терміново</label>
+    <!-- Поля введення -->
+    <input type="text" id="inp" placeholder="Назва завдання">
+    <br>
+    <input type="text" id="prio" placeholder="Пріоритет (1-5)" style="width: 120px;">
+    <span id="errPrio" class="error">⚠ Тільки цифри від 1 до 5</span>
+    <br>
+    <input type="text" id="date" placeholder="DD/MM/YYYY" style="width: 120px;">
+    <span id="errDate" class="error">⚠ Формат має бути DD/MM/YYYY</span>
+    
+    <br><br>
     <button onclick="add()">Зберегти завдання</button>
-
-    <hr>
-    <button onclick="mark()">Позначити як виконане</button>
-    <button onclick="del()">Видалити вибрані</button>
     <button onclick="clr()">Очистити все</button>
 
+    <hr>
     <ul id="list"></ul>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('todo_db')) || [];
+        let db = JSON.parse(localStorage.getItem('todo_db_v2')) || [];
         
+        // --- РЕГУЛЯРНІ ВИРАЗИ ---
+        const regexPrio = /^[1-5]$/;
+        // regex
+        const regexDate = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/[0-9]{4}$/;
+
         function draw() {
             let html = '';
             db.forEach((item, i) => {
-                let style = item.done ? 'text-decoration: line-through; color: grey' : '';
-                let check = item.done ? '' : `<input type="checkbox" data-id="${i}">`; 
-                let urgentMark = item.urgent ? '<b>[!]</b> ' : '';
-                html += `<li style="${style}">${check} ${urgentMark}${item.text}</li>`;
+                html += `<li><b>[${item.date}]</b> (Пріоритет: ${item.prio}) ${item.text}</li>`;
             });
             document.getElementById('list').innerHTML = html;
-            localStorage.setItem('todo_db', JSON.stringify(db));
         }
 
         function add() {
             let txt = document.getElementById('inp').value;
-            if(!txt) return;
-            let isUrgent = document.getElementById('urg').checked;
-            db.push({ text: txt, urgent: isUrgent, done: false });
-            document.getElementById('inp').value = ''; 
-            draw();
-        }
+            let prio = document.getElementById('prio').value;
+            let date = document.getElementById('date').value;
+            
+            let isValid = true;
 
-        function mark() {
-            document.querySelectorAll('input[type="checkbox"]:checked').forEach(el => {
-                db[el.getAttribute('data-id')].done = true;
-            });
-            draw();
-        }
+            // 1. Валідація Пріоритету
+            if (!regexPrio.test(prio)) {
+                document.getElementById('errPrio').style.display = 'inline';
+                isValid = false;
+            } else {
+                document.getElementById('errPrio').style.display = 'none';
+            }
 
-        function del() {
-            // Залишаємо тільки ті, де галочка НЕ стоїть (або ті, що вже виконані і без галочки)
-            // Логіка: видаляємо ті, що зараз відмічені галочкою
-            let checks = document.querySelectorAll('input[type="checkbox"]:checked');
-            // Щоб видалити правильно, йдемо з кінця або фільтруємо
-            let idsToDelete = Array.from(checks).map(c => c.getAttribute('data-id'));
-            db = db.filter((_, i) => !idsToDelete.includes(String(i)));
-            draw();
+            // 2. Валідація Дати
+            if (!regexDate.test(date)) {
+                document.getElementById('errDate').style.display = 'inline';
+                isValid = false;
+            } else {
+                document.getElementById('errDate').style.display = 'none';
+            }
+
+            // 3. Якщо текст пустий
+            if (!txt) { alert("Введіть назву!"); isValid = false; }
+
+            if (isValid) {
+                db.push({ text: txt, prio: prio, date: date });
+                localStorage.setItem('todo_db_v2', JSON.stringify(db));
+                // Очищення полів
+                document.getElementById('inp').value = '';
+                document.getElementById('prio').value = '';
+                document.getElementById('date').value = '';
+                draw();
+            }
         }
 
         function clr() {
             db = [];
+            localStorage.removeItem('todo_db_v2');
             draw();
         }
 
-        draw(); // Запуск при старті
+        draw();
     </script>
 </body>
 </html>
