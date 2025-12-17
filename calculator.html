@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculator Simplified</title>
+</head>
+<body>
+    <a href="index.html">⬅ Назад</a>
+    <h1>Калькулятор</h1>
+
+    <input type="text" id="res" style="width: 200px; font-size: 20px;" readonly>
+    <br><br>
+
+    <button onclick="ins('1')">1</button>
+    <button onclick="ins('2')">2</button>
+    <button onclick="ins('3')">3</button>
+    <button onclick="ins('+')">+</button>
+    <br>
+    <button onclick="ins('4')">4</button>
+    <button onclick="ins('5')">5</button>
+    <button onclick="ins('6')">6</button>
+    <button onclick="ins('-')">-</button>
+    <br>
+    <button onclick="ins('7')">7</button>
+    <button onclick="ins('8')">8</button>
+    <button onclick="ins('9')">9</button>
+    <button onclick="ins('*')">×</button>
+    <br>
+    <button onclick="clean()">C</button>
+    <button onclick="ins('0')">0</button>
+    <button onclick="calc()">=</button>
+    <button onclick="ins('/')">÷</button>
+
+    <script>
+        let f = document.getElementById('res');
+        
+        // Додає цифру або знак
+        function ins(v) { 
+            f.value += v; 
+        }
+        
+        // Рахує результат
+        function calc() { 
+            try { f.value = eval(f.value); } catch { f.value = 'Error'; } 
+        }
+        
+        // Очищає
+        function clean() { 
+            f.value = ''; 
+        }
+    </script>
+</body>
+</html>
